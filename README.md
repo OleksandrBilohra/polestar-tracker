@@ -51,10 +51,6 @@ Data is saved in SQLite:
 - file name: `polestar_tracker.db`
 - location: Flask instance path for the app
 
-## Why this is a good portfolio project
-Because it is not another useless toy app. It shows:
-- scoped product thinking
-- backend validation
-- persistence with SQLite
-- filters and clean data structure
-- practical niche positioning
+
+
+
