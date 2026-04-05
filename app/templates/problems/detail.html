@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block title %}{{ problem.title }} — Polestar Base{% endblock %}
+{% block content %}
+<section class="section">
+    <div class="container container-narrow">
+        <a href="{{ url_for('main.index') }}" class="back-link">← Back to problems</a>
+        <article class="detail-card">
+            <div class="problem-card-top">
+                <span class="badge badge-{{ problem.severity }}">{{ problem.severity }}</span>
+                <span class="chip chip-model">{{ problem.model }}</span>
+            </div>
+            <h1>{{ problem.title }}</h1>
+            <div class="meta-row meta-row-detail">
+                <span class="chip {% if problem.engine == '2.0 T6 Drive-E' %}engine-two{% else %}engine-three{% endif %}">{{ problem.engine }}</span>
+                <span class="chip">{{ problem.model_year }}</span>
+                <span class="chip">{{ problem.category }}</span>
+                <span class="chip">{{ problem.author_name or 'Anonymous' }}</span>
+            </div>
+
+            <section class="detail-block">
+                <h2>Symptoms</h2>
+                <p>{{ problem.symptoms }}</p>
+            </section>
+
+            <section class="detail-block">
+                <h2>Likely cause</h2>
+                <p>{{ problem.likely_cause }}</p>
+            </section>
+
+            <section class="detail-block">
+                <h2>Recommended fix</h2>
+                <p>{{ problem.recommended_fix }}</p>
+            </section>
+
+            {% if problem.source_note %}
+            <section class="detail-block">
+                <h2>Source note</h2>
+                <p>{{ problem.source_note }}</p>
+            </section>
+            {% endif %}
+        </article>
+    </div>
+</section>
+{% endblock %}

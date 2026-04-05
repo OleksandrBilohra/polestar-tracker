@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+{% block title %}Polestar Base — Browse issues{% endblock %}
+{% block content %}
+<section class="hero">
+    <div class="container hero-grid">
+        <div>
+            <span class="eyebrow">Volvo Polestar issue tracker</span>
+            <h1>One clean place for Volvo Polestar problems and fixes.</h1>
+            <p class="hero-copy">Stop digging through messy group posts. Search real issues by model, engine, year, and severity.</p>
+            <div class="hero-actions">
+                <a href="#issue-list" class="button">Browse issues</a>
+                <a href="{{ url_for('main.submit_problem') }}" class="button button-secondary">Add problem</a>
+            </div>
+        </div>
+        <div class="stat-grid">
+            <article class="stat-card"><span>Total problems</span><strong>{{ stats.total }}</strong></article>
+            <article class="stat-card"><span>High severity</span><strong>{{ stats.high }}</strong></article>
+            <article class="stat-card"><span>Models</span><strong>{{ stats.models }}</strong></article>
+            <article class="stat-card"><span>Engines</span><strong>{{ stats.engines }}</strong></article>
+        </div>
+    </div>
+</section>
+
+<section class="section section-tight">
+    <div class="container">
+        <form class="filter-panel" method="GET">
+            <div class="field-group field-search">
+                <label for="q">Search</label>
+                <input id="q" name="q" type="text" placeholder="Symptoms, causes, fixes..." value="{{ filters.q }}">
+            </div>
+            <div class="field-group">
+                <label for="model">Model</label>
+                <select id="model" name="model">
+                    <option value="">All models</option>
+                    {% for item in form_options.models %}
+                    <option value="{{ item }}" {% if filters.model == item %}selected{% endif %}>{{ item }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="field-group">
+                <label for="engine">Engine</label>
+                <select id="engine" name="engine">
+                    <option value="">All engines</option>
+                    {% for item in form_options.engines %}
+                    <option value="{{ item }}" {% if filters.engine == item %}selected{% endif %}>{{ item }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="field-group">
+                <label for="year">Year</label>
+                <select id="year" name="year">
+                    <option value="">All years</option>
+                    {% for item in form_options.years %}
+                    <option value="{{ item }}" {% if filters.year == item %}selected{% endif %}>{{ item }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="field-group">
+                <label for="severity">Severity</label>
+                <select id="severity" name="severity">
+                    <option value="">All</option>
+                    {% for item in form_options.severities %}
+                    <option value="{{ item }}" {% if filters.severity == item %}selected{% endif %}>{{ item|capitalize }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="field-group field-actions">
+                <button type="submit" class="button">Apply</button>
+            </div>
+        </form>
+    </div>
+</section>
+
+<section id="issue-list" class="section">
+    <div class="container">
+        <div class="section-heading">
+            <h2>Problems</h2>
+            <p>{{ problems|length }} result{% if problems|length != 1 %}s{% endif %}</p>
+        </div>
+
+        {% if problems %}
+        <div class="card-grid">
+            {% for problem in problems %}
+            <article class="problem-card">
+                <div class="problem-card-top">
+                    <span class="badge badge-{{ problem.severity }}">{{ problem.severity }}</span>
+                    <span class="chip chip-model">{{ problem.model }}</span>
+                </div>
+                <h3><a href="{{ url_for('main.problem_detail', slug=problem.slug) }}">{{ problem.title }}</a></h3>
+                <p>{{ problem.symptoms[:160] }}{% if problem.symptoms|length > 160 %}...{% endif %}</p>
+                <div class="meta-row">
+                    <span class="chip chip-engine {% if problem.engine == '2.0 T6 Drive-E' %}engine-two{% else %}engine-three{% endif %}">{{ problem.engine }}</span>
+                    <span class="chip">{{ problem.model_year }}</span>
+                    <span class="chip">{{ problem.category }}</span>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <h3>No matching issues found.</h3>
+            <p>Cut the filters or add the first one.</p>
+            <a href="{{ url_for('main.submit_problem') }}" class="button">Add problem</a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

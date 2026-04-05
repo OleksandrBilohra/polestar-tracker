@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Polestar Base{% endblock %}</title>
+    <meta name="description" content="Volvo Polestar issue tracker and owner knowledge base.">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container nav-row">
+            <a href="{{ url_for('main.index') }}" class="brand">
+                <img src="{{ url_for('static', filename='img/polestar-logo.png') }}" alt="Polestar Base logo" class="brand-logo">
+                <div>
+                    <strong>Polestar Base</strong>
+                    <small>Real issues. Real fixes. No forum chaos.</small>
+                </div>
+            </a>
+            <nav class="nav-links">
+                <a href="{{ url_for('main.index') }}">Browse</a>
+                <a href="{{ url_for('main.submit_problem') }}" class="button button-secondary">Add problem</a>
+            </nav>
+        </div>
+    </header>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="container flash-stack">
+                {% for category, message in messages %}
+                    <div class="flash flash-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <main>{% block content %}{% endblock %}</main>
+
+    <footer class="site-footer">
+        <div class="container footer-row">
+            <p>Volvo Polestar knowledge base MVP.</p>
+            <p>Built for clean portfolio proof, not for fake startup theater.</p>
+        </div>
+    </footer>
+
+    <script>
+        window.polestarValidYears = {{ {'3.0 T6':['2014','2015','2016'],'2.0 T6 Drive-E':['2016','2017','2018']} | tojson }};
+    </script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

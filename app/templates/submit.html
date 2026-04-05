@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% block title %}Add problem — Polestar Base{% endblock %}
+{% block content %}
+<section class="section">
+    <div class="container container-narrow">
+        <div class="section-heading section-heading-stack">
+            <span class="eyebrow">New issue entry</span>
+            <h1>Add a problem</h1>
+            <p>Use clean structured data. No vague drama, no useless filler.</p>
+        </div>
+
+        <form method="POST" class="form-card">
+            <div class="form-grid">
+                <div class="field-group field-span-2">
+                    <label for="title">Problem title *</label>
+                    <input id="title" name="title" value="{{ form.get('title', '') }}" placeholder="Example: Misfire under hard acceleration" required>
+                </div>
+
+                <div class="field-group">
+                    <label for="model">Model *</label>
+                    <select id="model" name="model" required>
+                        <option value="">Select model</option>
+                        {% for item in form_options.models %}
+                        <option value="{{ item }}" {% if form.get('model', '') == item %}selected{% endif %}>{{ item }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="field-group">
+                    <label for="engine">Engine *</label>
+                    <select id="engine" name="engine" required>
+                        <option value="">Select engine</option>
+                        {% for item in form_options.engines %}
+                        <option value="{{ item }}" {% if form.get('engine', '') == item %}selected{% endif %}>{{ item }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="field-group">
+                    <label for="model_year">Year *</label>
+                    <select id="model_year" name="model_year" required>
+                        <option value="">Select year</option>
+                        {% for item in form_options.years %}
+                        <option value="{{ item }}" {% if form.get('model_year', '') == item %}selected{% endif %}>{{ item }}</option>
+                        {% endfor %}
+                    </select>
+                    <small class="field-help">3.0 T6 = 2014-2016, 2.0 T6 Drive-E = 2016-2018.</small>
+                </div>
+
+                <div class="field-group">
+                    <label for="category">Category *</label>
+                    <input id="category" name="category" value="{{ form.get('category', '') }}" placeholder="Engine, Fuel, Suspension, Brakes..." required>
+                </div>
+
+                <div class="field-group">
+                    <label for="severity">Severity</label>
+                    <select id="severity" name="severity">
+                        {% set current = form.get('severity', 'medium') %}
+                        {% for item in form_options.severities %}
+                        <option value="{{ item }}" {% if current == item %}selected{% endif %}>{{ item|capitalize }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="field-group">
+                    <label for="author_name">Your name</label>
+                    <input id="author_name" name="author_name" value="{{ form.get('author_name', '') }}" placeholder="Optional">
+                </div>
+
+                <div class="field-group field-span-2">
+                    <label for="symptoms">Symptoms *</label>
+                    <textarea id="symptoms" name="symptoms" rows="4" required>{{ form.get('symptoms', '') }}</textarea>
+                </div>
+
+                <div class="field-group field-span-2">
+                    <label for="likely_cause">Likely cause *</label>
+                    <textarea id="likely_cause" name="likely_cause" rows="4" required>{{ form.get('likely_cause', '') }}</textarea>
+                </div>
+
+                <div class="field-group field-span-2">
+                    <label for="recommended_fix">Recommended fix *</label>
+                    <textarea id="recommended_fix" name="recommended_fix" rows="4" required>{{ form.get('recommended_fix', '') }}</textarea>
+                </div>
+
+                <div class="field-group field-span-2">
+                    <label for="source_note">Source note</label>
+                    <input id="source_note" name="source_note" value="{{ form.get('source_note', '') }}" placeholder="Owner experience, workshop note, group summary...">
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="button">Save problem</button>
+                <a href="{{ url_for('main.index') }}" class="button button-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}
