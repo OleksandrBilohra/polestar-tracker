@@ -150,7 +150,16 @@ def oem_parts():
     model = request.args.get('model', '').strip()
     category = request.args.get('category', '').strip()
 
-    parts = OemPart.query.order_by(OemPart.created_at.desc()).all()
+    all_parts = OemPart.query.order_by(OemPart.created_at.desc()).all()
+
+    stats = {
+        'total': len(all_parts),
+        'verified': sum(1 for p in all_parts if p.ai_verified),
+        'models': len({p.model for p in all_parts}),
+        'categories': len({p.category for p in all_parts}),
+    }
+
+    parts = all_parts
 
     if query:
         parts = [p for p in parts if query in p.to_search_blob()]
@@ -158,13 +167,6 @@ def oem_parts():
         parts = [p for p in parts if p.model == model]
     if category:
         parts = [p for p in parts if p.category == category]
-
-    stats = {
-        'total': OemPart.query.count(),
-        'verified': OemPart.query.filter_by(ai_verified=True).count(),
-        'models': len({p.model for p in OemPart.query.all()}),
-        'categories': len({p.category for p in OemPart.query.all()}),
-    }
 
     return render_template(
         'oem_parts.html',
@@ -195,6 +197,8 @@ def validate_oem_form(form):
         return 'Fill in all required fields.'
     if form['model'].strip() not in ALLOWED_MODELS:
         return 'Invalid model selected.'
+    if form['category'].strip() not in OEM_CATEGORIES:
+        return 'Invalid category selected.'
     return None
 
 
