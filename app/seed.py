@@ -1,4 +1,4 @@
-from .models import Problem, db
+from .models import OemPart, Problem, db
 
 
 def seed_if_empty():
@@ -78,3 +78,54 @@ def seed_if_empty():
         db.session.add(item)
 
     db.session.commit()
+
+    # ── OEM parts seed data ──────────────────────────────────────────────
+    if OemPart.query.count() == 0:
+        from .ai_verify import verify_oem_part
+
+        demo_parts = [
+            {
+                'part_number': '31316107',
+                'part_name': 'Polestar performance optimisation',
+                'description': 'ECU software upgrade that increases engine output and improves throttle response for the 2.0 T6 Drive-E engine.',
+                'model': 'S60 Polestar',
+                'category': 'ECU',
+                'author_name': 'Seed Admin',
+            },
+            {
+                'part_number': '31470471',
+                'part_name': 'Front strut brace',
+                'description': 'Polestar-branded front strut tower brace for improved chassis rigidity and sharper turn-in.',
+                'model': 'V60 Polestar',
+                'category': 'Suspension',
+                'author_name': 'Seed Admin',
+            },
+            {
+                'part_number': '31408876',
+                'part_name': 'Rear brake pad set',
+                'description': 'Genuine Volvo OEM rear brake pads for Polestar models with the upgraded Brembo brake package.',
+                'model': 'S60 Polestar',
+                'category': 'Brakes',
+                'author_name': 'Seed Admin',
+            },
+        ]
+
+        for data in demo_parts:
+            result = verify_oem_part(
+                data['part_number'], data['part_name'],
+                data['description'], data['model'], data['category'],
+            )
+            part = OemPart(
+                part_number=data['part_number'],
+                part_name=data['part_name'],
+                description=data['description'],
+                model=data['model'],
+                category=data['category'],
+                author_name=data['author_name'],
+                ai_verified=result['verified'],
+                ai_verdict=result['verdict'],
+            )
+            part.ensure_slug()
+            db.session.add(part)
+
+        db.session.commit()

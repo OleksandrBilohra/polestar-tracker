@@ -54,3 +54,37 @@ class Problem(db.Model):
             self.author_name or '',
             self.source_note or '',
         ]).lower()
+
+
+class OemPart(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    part_number = db.Column(db.String(80), nullable=False)
+    slug = db.Column(db.String(190), unique=True, nullable=False)
+    part_name = db.Column(db.String(160), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    model = db.Column(db.String(80), nullable=False)
+    category = db.Column(db.String(80), nullable=False)
+    author_name = db.Column(db.String(120), nullable=True)
+    ai_verified = db.Column(db.Boolean, default=False, nullable=False)
+    ai_verdict = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+    def ensure_slug(self):
+        base = slugify(f'{self.part_number}-{self.part_name}')[:170] or 'oem-part'
+        slug = base
+        counter = 2
+        while OemPart.query.filter(OemPart.slug == slug, OemPart.id != self.id).first():
+            slug = f'{base}-{counter}'
+            counter += 1
+        self.slug = slug
+
+    def to_search_blob(self):
+        return ' '.join([
+            self.part_number,
+            self.part_name,
+            self.description,
+            self.model,
+            self.category,
+            self.author_name or '',
+            self.ai_verdict or '',
+        ]).lower()

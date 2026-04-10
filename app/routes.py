@@ -1,10 +1,12 @@
 from flask import Blueprint, flash, redirect, render_template, request, url_for
+from .ai_verify import verify_oem_part
 from .models import (
     ALLOWED_ENGINES,
     ALLOWED_MODELS,
     ALLOWED_SEVERITIES,
     ALLOWED_YEARS,
     VALID_ENGINE_YEAR_MAP,
+    OemPart,
     Problem,
     db,
 )
@@ -131,3 +133,118 @@ def submit_problem():
         return redirect(url_for('main.problem_detail', slug=problem.slug))
 
     return render_template('submit.html', form={}, form_options=form_options)
+
+
+# ── OEM Parts ────────────────────────────────────────────────────────────
+
+OEM_CATEGORIES = [
+    'Engine', 'Brakes', 'Suspension', 'Drivetrain', 'Exhaust',
+    'Turbo', 'Intake', 'ECU', 'Body', 'Interior', 'Electrical',
+    'Cooling', 'Fuel', 'Transmission', 'Wheels', 'Steering',
+]
+
+
+@bp.route('/oem-parts')
+def oem_parts():
+    query = request.args.get('q', '').strip().lower()
+    model = request.args.get('model', '').strip()
+    category = request.args.get('category', '').strip()
+
+    all_parts = OemPart.query.order_by(OemPart.created_at.desc()).all()
+
+    stats = {
+        'total': len(all_parts),
+        'verified': sum(1 for p in all_parts if p.ai_verified),
+        'models': len({p.model for p in all_parts}),
+        'categories': len({p.category for p in all_parts}),
+    }
+
+    parts = all_parts
+
+    if query:
+        parts = [p for p in parts if query in p.to_search_blob()]
+    if model:
+        parts = [p for p in parts if p.model == model]
+    if category:
+        parts = [p for p in parts if p.category == category]
+
+    return render_template(
+        'oem_parts.html',
+        parts=parts,
+        stats=stats,
+        filters={
+            'q': request.args.get('q', ''),
+            'model': model,
+            'category': category,
+        },
+        form_options={
+            'models': ALLOWED_MODELS,
+            'categories': OEM_CATEGORIES,
+        },
+    )
+
+
+@bp.route('/oem-parts/<slug>')
+def oem_part_detail(slug):
+    part = OemPart.query.filter_by(slug=slug).first_or_404()
+    return render_template('oem_parts/detail.html', part=part)
+
+
+def validate_oem_form(form):
+    required = ['part_number', 'part_name', 'description', 'model', 'category']
+    missing = [f for f in required if not form.get(f, '').strip()]
+    if missing:
+        return 'Fill in all required fields.'
+    if form['model'].strip() not in ALLOWED_MODELS:
+        return 'Invalid model selected.'
+    if form['category'].strip() not in OEM_CATEGORIES:
+        return 'Invalid category selected.'
+    return None
+
+
+@bp.route('/oem-parts/submit', methods=['GET', 'POST'])
+def submit_oem_part():
+    form_options = {
+        'models': ALLOWED_MODELS,
+        'categories': OEM_CATEGORIES,
+    }
+
+    if request.method == 'POST':
+        error = validate_oem_form(request.form)
+        if error:
+            flash(error, 'error')
+            return render_template('oem_submit.html', form=request.form,
+                                   form_options=form_options)
+
+        part_number = request.form['part_number'].strip()
+        part_name = request.form['part_name'].strip()
+        description = request.form['description'].strip()
+        model = request.form['model'].strip()
+        category = request.form['category'].strip()
+
+        # AI verification
+        result = verify_oem_part(part_number, part_name, description,
+                                 model, category)
+
+        part = OemPart(
+            part_number=part_number,
+            part_name=part_name,
+            description=description,
+            model=model,
+            category=category,
+            author_name=request.form.get('author_name', '').strip() or 'Anonymous',
+            ai_verified=result['verified'],
+            ai_verdict=result['verdict'],
+        )
+        part.ensure_slug()
+        db.session.add(part)
+        db.session.commit()
+
+        if result['verified']:
+            flash('OEM part saved and verified by AI.', 'success')
+        else:
+            flash('OEM part saved. AI could not fully verify it — see details.', 'error')
+
+        return redirect(url_for('main.oem_part_detail', slug=part.slug))
+
+    return render_template('oem_submit.html', form={}, form_options=form_options)
