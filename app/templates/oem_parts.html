@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+{% block title %}OEM Parts — Polestar Base{% endblock %}
+{% block content %}
+<section class="hero">
+    <div class="container hero-grid">
+        <div>
+            <span class="eyebrow">OEM parts catalogue</span>
+            <h1>Volvo Polestar OEM Parts</h1>
+            <p class="hero-copy">Search verified OEM parts for S60 and V60 Polestar. Every submission is checked by AI for authenticity and availability.</p>
+            <div class="hero-actions">
+                <a href="#parts-list" class="button">Browse parts</a>
+                <a href="{{ url_for('main.submit_oem_part') }}" class="button button-secondary">Add OEM part</a>
+            </div>
+        </div>
+        <div class="stat-grid">
+            <article class="stat-card"><span>Total parts</span><strong>{{ stats.total }}</strong></article>
+            <article class="stat-card"><span>AI verified</span><strong>{{ stats.verified }}</strong></article>
+            <article class="stat-card"><span>Models</span><strong>{{ stats.models }}</strong></article>
+            <article class="stat-card"><span>Categories</span><strong>{{ stats.categories }}</strong></article>
+        </div>
+    </div>
+</section>
+
+<section class="section section-tight">
+    <div class="container">
+        <form class="filter-panel filter-panel-oem" method="GET">
+            <div class="field-group field-search">
+                <label for="q">Search</label>
+                <input id="q" name="q" type="text" placeholder="Part number, name, description..." value="{{ filters.q }}">
+            </div>
+            <div class="field-group">
+                <label for="model">Model</label>
+                <select id="model" name="model">
+                    <option value="">All models</option>
+                    {% for item in form_options.models %}
+                    <option value="{{ item }}" {% if filters.model == item %}selected{% endif %}>{{ item }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="field-group">
+                <label for="category">Category</label>
+                <select id="category" name="category">
+                    <option value="">All categories</option>
+                    {% for item in form_options.categories %}
+                    <option value="{{ item }}" {% if filters.category == item %}selected{% endif %}>{{ item }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="field-group field-actions">
+                <button type="submit" class="button">Apply</button>
+            </div>
+        </form>
+    </div>
+</section>
+
+<section id="parts-list" class="section">
+    <div class="container">
+        <div class="section-heading">
+            <h2>Parts</h2>
+            <p>{{ parts|length }} result{% if parts|length != 1 %}s{% endif %}</p>
+        </div>
+
+        {% if parts %}
+        <div class="card-grid">
+            {% for part in parts %}
+            <article class="problem-card">
+                <div class="problem-card-top">
+                    {% if part.ai_verified %}
+                    <span class="badge badge-low">Verified</span>
+                    {% else %}
+                    <span class="badge badge-high">Unverified</span>
+                    {% endif %}
+                    <span class="chip chip-model">{{ part.model }}</span>
+                </div>
+                <h3><a href="{{ url_for('main.oem_part_detail', slug=part.slug) }}">{{ part.part_name }}</a></h3>
+                <p class="part-number-display">{{ part.part_number }}</p>
+                <p>{{ part.description[:140] }}{% if part.description|length > 140 %}...{% endif %}</p>
+                <div class="meta-row">
+                    <span class="chip">{{ part.category }}</span>
+                    <span class="chip">{{ part.author_name or 'Anonymous' }}</span>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <h3>No OEM parts found.</h3>
+            <p>Clear the filters or add the first one.</p>
+            <a href="{{ url_for('main.submit_oem_part') }}" class="button">Add OEM part</a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

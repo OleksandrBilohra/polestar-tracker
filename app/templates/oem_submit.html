@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block title %}Add OEM part — Polestar Base{% endblock %}
+{% block content %}
+<section class="section">
+    <div class="container container-narrow">
+        <div class="section-heading section-heading-stack">
+            <span class="eyebrow">New OEM part entry</span>
+            <h1>Add an OEM part</h1>
+            <p>Submit a Volvo/Polestar OEM part. AI will verify authenticity and availability when you save.</p>
+        </div>
+
+        <form method="POST" class="form-card">
+            <div class="form-grid">
+                <div class="field-group">
+                    <label for="part_number">Part number *</label>
+                    <input id="part_number" name="part_number" value="{{ form.get('part_number', '') }}" placeholder="Example: 31399-306" required>
+                    <small class="field-help">Volvo format: 31XXX-XXX or 8-digit numeric.</small>
+                </div>
+
+                <div class="field-group">
+                    <label for="part_name">Part name *</label>
+                    <input id="part_name" name="part_name" value="{{ form.get('part_name', '') }}" placeholder="Example: Polestar front strut brace" required>
+                </div>
+
+                <div class="field-group">
+                    <label for="model">Model *</label>
+                    <select id="model" name="model" required>
+                        <option value="">Select model</option>
+                        {% for item in form_options.models %}
+                        <option value="{{ item }}" {% if form.get('model', '') == item %}selected{% endif %}>{{ item }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="field-group">
+                    <label for="category">Category *</label>
+                    <select id="category" name="category" required>
+                        <option value="">Select category</option>
+                        {% for item in form_options.categories %}
+                        <option value="{{ item }}" {% if form.get('category', '') == item %}selected{% endif %}>{{ item }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="field-group field-span-2">
+                    <label for="description">Description *</label>
+                    <textarea id="description" name="description" rows="4" placeholder="What this part does, fitment notes, compatibility..." required>{{ form.get('description', '') }}</textarea>
+                </div>
+
+                <div class="field-group">
+                    <label for="author_name">Your name</label>
+                    <input id="author_name" name="author_name" value="{{ form.get('author_name', '') }}" placeholder="Optional">
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="button">Save OEM part</button>
+                <a href="{{ url_for('main.oem_parts') }}" class="button button-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}
